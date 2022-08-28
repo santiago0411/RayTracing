@@ -1,10 +1,10 @@
-#include "Renderer.h"
 #include "Walnut/Application.h"
 #include "Walnut/EntryPoint.h"
-
 #include "Walnut/Timer.h"
 
 #include "Renderer.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
 
@@ -15,13 +15,19 @@ public:
 	{
 		ImGui::Begin("Settings");
 		ImGui::Text("Last render: %.3fms", m_LastRenderTime);
+		static glm::vec3 color(1, 0, 1);
+		ImGui::ColorEdit3("Sphere color", glm::value_ptr(color));
+		m_Renderer.SetSphereColor(color);
+		static glm::vec3 lightDir(-1, -1, -1);
+		ImGui::DragFloat3("Light direction", glm::value_ptr(lightDir), 0.01f, -10.0f, 10.0f);
+		m_Renderer.SetLightDirection(lightDir);
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Viewport");
 
-		m_ViewportWidth = ImGui::GetContentRegionAvail().x;
-		m_ViewportHeight = ImGui::GetContentRegionAvail().y;
+		m_ViewportWidth = (uint32_t)ImGui::GetContentRegionAvail().x;
+		m_ViewportHeight = (uint32_t)ImGui::GetContentRegionAvail().y;
 
 		if (const auto image = m_Renderer.GetFinalImage())
 			ImGui::Image(image->GetDescriptorSet(), { (float)image->GetWidth(), (float)image->GetHeight() },
