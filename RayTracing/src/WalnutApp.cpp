@@ -15,6 +15,8 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f)
 	{
+		m_Scene.Spheres.push_back(Sphere{ {0.0f, 0.0f, 0.0f}, 0.5f, {1.0f, 0.0f, 1.0f} });
+		m_Scene.Spheres.push_back(Sphere{ {1.0f, 0.0f, -5.0f}, 1.5f, {0.2f, 0.3f, 1.0f} });
 	}
 
 	void OnUpdate(float ts) override
@@ -26,12 +28,22 @@ public:
 	{
 		ImGui::Begin("Settings");
 		ImGui::Text("Last render: %.3fms", m_LastRenderTime);
-		static glm::vec3 color(1, 0, 1);
-		ImGui::ColorEdit3("Sphere color", glm::value_ptr(color));
-		m_Renderer.SetSphereColor(color);
-		static glm::vec3 lightDir(-1, -1, -1);
-		ImGui::DragFloat3("Light direction", glm::value_ptr(lightDir), 0.01f, -10.0f, 10.0f);
-		m_Renderer.SetLightDirection(lightDir);
+		ImGui::End();
+
+		ImGui::Begin("Scene");
+		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
+		{
+			ImGui::PushID(i);
+
+			auto& [Position, Radius, Albedo] = m_Scene.Spheres[i];
+			ImGui::DragFloat3("Position", glm::value_ptr(Position), 0.05f);
+			ImGui::DragFloat("Radius", &Radius, 0.05f);
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(Albedo));
+
+			ImGui::Separator();
+
+			ImGui::PopID();
+		}
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -56,7 +68,7 @@ public:
 
 		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
 		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
-		m_Renderer.Render(m_Camera);
+		m_Renderer.Render(m_Scene, m_Camera);
 
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
@@ -64,6 +76,7 @@ public:
 private:
 	Camera m_Camera;
 	Renderer m_Renderer;
+	Scene m_Scene;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
 	float m_LastRenderTime = 0.0f;
